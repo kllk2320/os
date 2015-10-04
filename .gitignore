@@ -33,3 +33,6 @@
 *.swp
 
 *.pdf
+*.iso
+*log.txt
+*.log
