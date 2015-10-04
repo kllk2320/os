@@ -13,44 +13,23 @@
  *	@param com: The serial port to configure
  *	@param divisor: the divisor.
  */
-void serial_configure_baud_rate(unsigned short com, unsigned short divisor)
+void serial_configure_baud_rate(unsigned short com, unsigned char divisor)
 {
+	outb(SERIAL_IRQ_COMMAND_PORT(com), 0);   // Disable all interrupts
     outb(SERIAL_LINE_COMMAND_PORT(com), SERIAL_LINE_ENABLE_DLAB);
-    outb(SERIAL_DATA_PORT(com), ((divisor >> 8) & 0x00ff));
-    outb(SERIAL_DATA_PORT(com), (divisor & 0x00ff));
+    outb(SERIAL_BAUD_RATE_LOW_PORT(com), divisor);
+    outb(SERIAL_BAUD_RATE_HIGH_PORT(com), 0);
 }
 /** serial_configure_line
  *
  * Configures the line of the given serial port. The port is set to have a
  * data lenght of 8 bits, no parity bits, one stop bits and break control
  * disabled. 
- *
- * @param com: the serial port to configure
- * @param parity: the parity  
- * @param data_bits:  the data bits
- * @param bc: break control, 0: disable, 1: enable
- * @param stop_bit: the stop bit, 0: 1 stop-bit, 1: 1.5 or 2 stop-bits
  */
-#if 1
 void serial_configure_line(unsigned short com, unsigned char config)
 {
     outb(SERIAL_LINE_COMMAND_PORT(com), config);
 }
-
-#else
-void serial_configure_line(unsigned short com, unsigned char parity, unsigned char data_bits,
-						   unsigned char bc, unsigned char stop_bit)
-{
-	unsigned char l;	
-
-	l = ((bc << 6) & SERIAL_BREAK_CONTROL_MASK) &
-		((parity << 3) & SERIAL_PARITY_MASK) &
-		((stop_bit << 2) & SERIAL_STOP_BITS_MASK) &
-		(data_bits & SERIAL_DATA_BITS_MASK);
-
-    outb(SERIAL_LINE_COMMAND_PORT(com), l);
-}
-#endif
 
 /**
  * Configures the fifo buffer of the given serial port. The port is set as: 
@@ -60,7 +39,7 @@ void serial_configure_line(unsigned short com, unsigned char parity, unsigned ch
  */
 void serial_configure_fifo(unsigned short com, unsigned char config)
 {
-    outb(SERIAL_LINE_COMMAND_PORT(com), config);
+    outb(SERIAL_FIFO_COMMAND_PORT(com), config);
 }
 
 /**
@@ -75,14 +54,24 @@ void serial_configure_modem(unsigned short com, unsigned char config)
  */
 void serial_init() 
 {
+#if 0
+   outb(SERIAL_COM1 + 1, 0x00);    // Disable all interrupts
+   outb(SERIAL_COM1 + 3, 0x80);    // Enable DLAB (set baud rate divisor)
+   outb(SERIAL_COM1 + 0, 0x01);    // Set divisor to 3 (lo byte) 38400 baud
+   outb(SERIAL_COM1 + 1, 0x00);    //                  (hi byte)
+   outb(SERIAL_COM1 + 3, 0x03);    // 8 bits, no parity, one stop bit
+   outb(SERIAL_COM1 + 2, 0xC7);    // Enable FIFO, clear them, with 14-byte threshold
+   outb(SERIAL_COM1 + 4, 0x0B);    // IRQs enabled, RTS/DSR set
+#else
 	/*Set baud rate to be 115200*/
-	serial_configure_baud_rate(SERIAL_COM1, 2);
+	serial_configure_baud_rate(SERIAL_COM1, 1);
 
 	/* 8 bits, no parity, one stop bit, no break control */
 	serial_configure_line(SERIAL_COM1, SERIAL_8N1);
 
 	serial_configure_fifo(SERIAL_COM1, SERIAL_FIFO_14);
 	serial_configure_modem(SERIAL_COM1, SERIAL_RTS_DTR);
+#endif
 }
 /**
  *  Checks whether the transmit FIFO queue is empty or not for the given COM port

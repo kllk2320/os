@@ -1,11 +1,14 @@
 #ifndef _SERIAL_H
 #define _SERIAL_H
 
-#define SERIAL_DATA_PORT(base)      (base)
+#define SERIAL_DATA_PORT(base)      		(base)
+#define SERIAL_BAUD_RATE_LOW_PORT(base)		(base )
+#define SERIAL_BAUD_RATE_HIGH_PORT(base)	(base + 1)
+#define SERIAL_IRQ_COMMAND_PORT(base)		(base + 1)
 #define SERIAL_FIFO_COMMAND_PORT(base)      (base + 2)
 #define SERIAL_LINE_COMMAND_PORT(base)      (base + 3)
-#define SERIAL_MODEM_COMMAND_PORT(base)      (base + 4)
-#define SERIAL_LINE_STATUS_PORT(base)      (base + 5)
+#define SERIAL_MODEM_COMMAND_PORT(base)     (base + 4)
+#define SERIAL_LINE_STATUS_PORT(base)      	(base + 5)
 
 
 /**
